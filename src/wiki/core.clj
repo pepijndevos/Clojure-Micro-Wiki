@@ -4,7 +4,15 @@
     net.cgrand.moustache
     [ring.middleware params stacktrace reload]
     ring.util.response
-    hiccup.core))
+    hiccup.core
+    com.ashafa.clutch))
+
+(def db (get-database "wiki"))
+
+(defn wrap-db [f]
+  (fn [req]
+    (with-db db
+      (f req))))
 
 (defn page [title content]
   (html
@@ -16,14 +24,16 @@
       [:div content]]]))
 
 (defn show [_ title]
-  (response
-    (page title "hello world")))
+  (let [{:keys [content _rev]} (get-document title)]
+    (response
+      (page title content))))
 
 (def wiki
   (app
     wrap-params
     wrap-stacktrace
     (wrap-reload ['wiki.core])
+    wrap-db
     [[title #"(?:[A-Z][a-z]+){2,}"]] (delegate show title)
     [&] (constantly (redirect "/MainPage"))))
 
