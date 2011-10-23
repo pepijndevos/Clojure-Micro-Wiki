@@ -49,12 +49,13 @@
 (def wiki
   (app
     wrap-params
-    wrap-stacktrace
-    (wrap-reload ['wiki.core])
+    ;wrap-stacktrace
+    ;(wrap-reload ['wiki.core])
     wrap-db
     [[title #"(?:[A-Z][a-z]+){2,}"]] {:get (delegate show title)
                                       :post (delegate update title)}
     [&] (constantly (redirect "/MainPage"))))
 
 (defn -main []
-  (run-jetty #'wiki {:port 8080}))
+  (let [port (Integer/parseInt (System/getenv "PORT"))]
+    (run-jetty wiki {:port port})))
