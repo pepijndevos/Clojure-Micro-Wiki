@@ -1,1 +1,4 @@
-(ns wiki.core)
+(ns wiki.core
+  (:use
+    ring.adapter.jetty
+    net.cgrand.moustache))
