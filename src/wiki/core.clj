@@ -5,7 +5,9 @@
     [ring.middleware params stacktrace reload]
     ring.util.response
     hiccup.core
-    com.ashafa.clutch))
+    com.ashafa.clutch)
+  (:require [clojure.string :as s])
+  (:import org.pegdown.PegDownProcessor))
 
 (def db (get-database "wiki"))
 
@@ -14,6 +16,10 @@
     (with-db db
       (f req))))
 
+(defn markup [text]
+  (s/replace (.markdownToHtml (PegDownProcessor.) (if text text ""))
+             #"(?:[A-Z][a-z]+){2,}" "<a href=\"/$0\">$0</a>"))
+
 (defn page [title content rev]
   (html
     [:html
@@ -21,7 +27,7 @@
       [:title title]]
      [:body
       [:h1 title]
-      [:div content]
+      [:div (markup content)]
       [:hr]
       [:form {:method "POST" :action (str "/" title)}
        [:textarea {:name "content"} content]
